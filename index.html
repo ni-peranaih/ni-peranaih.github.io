@@ -385,7 +385,7 @@
         <input id="mName" maxlength="20" placeholder="暱稱（選填）" autocomplete="nickname">
         <textarea id="mText" maxlength="300" placeholder="寫下你的留言，審核通過後顯示"></textarea>
         <div id="mTs"></div>
-        <div class="cap" id="mCap" hidden><span id="mQ"></span><input id="mA" inputmode="numeric" maxlength="3" placeholder="答案" autocomplete="off"></div>
+        <div class="cap" id="mCap"><span id="mQ"></span><input id="mA" inputmode="numeric" maxlength="3" placeholder="答案" autocomplete="off"></div>
         <span class="tip" id="mTip"></span>
         <button class="btn" id="mSend" type="button">提交留言</button>
       </div>
@@ -580,7 +580,7 @@
     try {
       const r = await get('/q');
       if (r.site) { site = r.site; $('mCap').hidden = true; tsTok = ''; if (wid === null) { wid = await tsRender($('mTs'), t => { tsTok = t; }); if (wid === null) $('mTip').textContent = '驗證組件加載失敗，請檢查網絡或關閉攔截插件後重試'; } else turnstile.reset(wid); }
-      else { tok = r.tok; $('mCap').hidden = true; } // 验证已关闭（2026-10-27）：不显示算术题
+      else { tok = r.tok; $('mQ').textContent = r.q + ' ='; $('mA').value = ''; }
     } catch {}
   };
   $('board').addEventListener('toggle', async () => {
