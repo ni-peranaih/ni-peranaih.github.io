@@ -580,7 +580,7 @@
     try {
       const r = await get('/q');
       if (r.site) { site = r.site; $('mCap').hidden = true; tsTok = ''; if (wid === null) { wid = await tsRender($('mTs'), t => { tsTok = t; }); if (wid === null) $('mTip').textContent = '驗證組件加載失敗，請檢查網絡或關閉攔截插件後重試'; } else turnstile.reset(wid); }
-      else { tok = r.tok; $('mQ').textContent = r.q + ' ='; $('mA').value = ''; }
+      else { tok = r.tok; $('mCap').hidden = true; } // 验证已关闭（2026-10-27）：不显示算术题
     } catch {}
   };
   $('board').addEventListener('toggle', async () => {
