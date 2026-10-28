@@ -928,7 +928,7 @@
     try {
       const r = await post('/chat/send', { sid, text: held, ...extra });
       if (r.ok) { held = null; ctok = ''; store.set('chatted', '1'); $('chips').hidden = true; loop(); }
-      else if (r.err === 'cap') { log.append(el('bub', extra.ans !== undefined ? '答案不對，請重新計算' : '驗證沒通過，請重新完成驗證')); ask(); }
+      else if (r.err === 'cap') { if (extra.ans !== undefined) log.append(el('bub', '答案不對，請重新計算')); else if (extra.ts) log.append(el('bub', '驗證沒通過，請重新完成驗證')); ask(); }
       else { held = null; log.append(el('bub', r.err === 'rate' ? '發送太頻繁，請稍後再試' : '發送失敗，請重試')); }
     } catch { held = null; log.append(el('bub', '網絡錯誤，請重試')); }
   };
