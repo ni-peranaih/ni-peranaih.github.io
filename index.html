@@ -852,6 +852,7 @@
         else $('chatSt').innerHTML = '客服暫時離線，留言後會盡快回覆，急事請用電報 <a class="tg-link" href="https://t.me/qqusbot" target="_blank" rel="noopener">@qqusbot</a>';
       }
       if (!r.on && store.get('chatted') && !store.get('ctLeft')) ctShow();
+      else if (r.on) $('chatCt').hidden = true; // 客服一上線就收起留聯繫方式框
       r.msgs.forEach(m => {
         if (m.id <= last) return; // 已顯示過（並發輪詢返回了同一批消息）
         const b = el('bub' + (m.side === 'v' ? ' me' : ''), m.text);
