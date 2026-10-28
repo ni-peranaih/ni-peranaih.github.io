@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://cangbaoge.3834864380.workers.dev">
 <title>藏寶閣｜海外賬號・科學上網・eSIM 導航</title>
 <meta name="description" content="藏寶閣：海外賬號（Telegram、推特、Google、Facebook、Apple ID）、科學上網與 eSIM 一站式導航，客服在線支援，放心選購。">
 <meta name="keywords" content="海外賬號,科學上網,eSIM,Telegram賬號,Apple ID,藏寶閣">
@@ -549,12 +550,6 @@
   scheduleClockTick();
 
   const list = document.getElementById('linkList');
-  // 排序：客服支援移到「常見問題」下面（常見問題緊跟鏈接列表）
-  const placeSupport = () => {
-    const faq = document.getElementById('faqRow');
-    const row = list.querySelector('[data-id="客服支援"]');
-    if (faq && row) faq.after(row);
-  };
   const render = items => {
   list.innerHTML = ''; // 清空旧链接，防止重复生成
   items = items.filter(x => x.label !== '客服支援'); // 客服統一走網頁在線客服，這一行不再顯示（機器人那邊的數據保留）
@@ -620,7 +615,6 @@
     a.append(main, arrow);
     list.appendChild(a);
   });
-    placeSupport();
   };
   render(links);
   // 链接由机器人的 /链接 命令管理；取不到或为空时保留上面的内置链接
@@ -852,9 +846,12 @@
     try {
       const r = await get('/chat?sid=' + sid + '&after=' + last + (lastBad ? '&chk=1' : ''));
       if (lastBad && r.vd === 1 && lastV) { lastV.textContent = '已送達'; lastBad = false; } // 之前推送失败的消息后来补发成功了
-      $('chatSt').className = r.on ? 'on' : '';
-      if (r.on) $('chatSt').textContent = '● 客服在線，通常幾分鐘內回覆';
-      else $('chatSt').innerHTML = '客服暫時離線，留言後會盡快回覆，急事請用電報 <a class="tg-link" href="https://t.me/qqusbot" target="_blank" rel="noopener">@qqusbot</a>';
+      if (poll.on !== r.on) { // 狀態沒變就不動這一行：省得每 2 秒重建裡面的電報鏈接、反覆觸發語言轉換
+        poll.on = r.on;
+        $('chatSt').className = r.on ? 'on' : '';
+        if (r.on) $('chatSt').textContent = '● 客服在線，通常幾分鐘內回覆';
+        else $('chatSt').innerHTML = '客服暫時離線，留言後會盡快回覆，急事請用電報 <a class="tg-link" href="https://t.me/qqusbot" target="_blank" rel="noopener">@qqusbot</a>';
+      }
       if (!r.on && store.get('chatted') && !store.get('ctLeft')) ctShow();
       r.msgs.forEach(m => {
         if (m.id <= last) return; // 已顯示過（並發輪詢返回了同一批消息）
@@ -931,7 +928,7 @@
     try {
       const r = await post('/chat/send', { sid, text: held, ...extra });
       if (r.ok) { held = null; ctok = ''; store.set('chatted', '1'); $('chips').hidden = true; loop(); }
-      else if (r.err === 'cap') { if (extra.ans !== undefined) log.append(el('bub', '答案不對，請重新計算')); ask(); }
+      else if (r.err === 'cap') { log.append(el('bub', extra.ans !== undefined ? '答案不對，請重新計算' : '驗證沒通過，請重新完成驗證')); ask(); }
       else { held = null; log.append(el('bub', r.err === 'rate' ? '發送太頻繁，請稍後再試' : '發送失敗，請重試')); }
     } catch { held = null; log.append(el('bub', '網絡錯誤，請重試')); }
   };
@@ -959,7 +956,7 @@
 
   // 語言切換：繁 / 简 / EN（偏好記在本機）。簡體用 OpenCC（點擊時才加載），英文用下面的內置對照表
   const EN = {
-    '藏寶閣': 'Treasure Pavilion', '千帆過盡皆是客 洗盡鉛華誰人知': 'A thousand sails pass, all are guests; strip away the glamour — who will know?', '花開富貴': 'May Fortune Bloom', '分享給朋友': 'Share with friends', '連結已複製，去粘貼分享吧': 'Link copied — paste it anywhere to share',
+    '藏寶閣': 'Treasure Pavilion', '千帆過盡皆是客 洗盡鉛華誰人知': 'A thousand sails pass, all are guests; strip away the glamour — who will know?', '花開富貴': 'May Fortune Bloom', '分享給朋友': 'Share with friends',
     '海外賬號': 'Overseas Accounts', 'Telegram丨推特丨谷歌丨Facebook丨蘋果': 'Telegram | Twitter | Google | Facebook | Apple',
     '科學上網': 'Secure Internet Access', '穩定 · 安全 · 高速': 'Stable · Secure · Fast',
     '客服支援': 'Customer Support', '電報: @qqusbot': 'Telegram: @qqusbot', '電報': 'Telegram',
@@ -969,20 +966,16 @@
     '驗證沒通過，請重試': 'Verification failed, please retry', '提交太頻繁，請稍後再試': 'Submitting too fast, please try again later', '提交失敗，請重試': 'Submit failed, please retry', '網絡錯誤，請重試': 'Network error, please retry',
     '在線客服': 'Live Support', '● 客服在線，通常幾分鐘內回覆': '● Support is online, usually replies within minutes',
     '客服暫時離線，留言後會盡快回覆，急事請用電報': 'Support is offline. Leave a message and we will reply soon. For urgent matters, use Telegram',
-    '留下電報用戶名或聯繫方式，客服離線中，上線後會主動聯繫你': 'Leave your Telegram username or contact. Support is offline and will reach out once back online',
-    '留下電報用戶名或聯繫方式': 'Leave your Telegram username or contact',
     '提交': 'Submit', '發送': 'Send', '輸入消息': 'Type a message', '你好，有什麼可以幫你？': 'Hi, how can we help?', '歡迎回來': 'Welcome back', '有問題？點我在線諮詢': 'Questions? Tap to chat with us', '熱門': 'HOT', '新': 'NEW',
     '留個聯繫方式': 'Leave a contact', 'Telegram / 微信 / QQ / 郵箱': 'Telegram / WeChat / QQ / Email', '已收到，客服上線後會聯繫你': 'Got it — we will reach out when support is back',
-    '為防止騷擾，請先完成驗證：': 'To prevent spam, please complete the verification:', '答案不對，請重新計算': 'Wrong answer, please try again',
+    '為防止騷擾，請先完成驗證：': 'To prevent spam, please complete the verification:', '答案不對，請重新計算': 'Wrong answer, please try again', '驗證沒通過，請重新完成驗證': 'Verification failed — please complete it again',
     '發送太頻繁，請稍後再試': 'Sending too fast, please try again later', '發送失敗，請重試': 'Failed to send, please retry',
-    '已記下，上線後會主動聯繫你': 'Noted. We will contact you once we are back online',
     '已送達': 'Delivered',
-    '常見問題': 'FAQ', '怎麼付款': 'How do I pay?', '多久發貨': 'How fast is delivery?', '怎麼使用': 'How do I use it?', '已下單出問題': 'Problem with my order', '其他問題': 'Other questions',
+    '常見問題': 'FAQ', '怎麼付款': 'How do I pay?', '多久發貨': 'How fast is delivery?', '怎麼使用': 'How do I use it?',
     '常見問題，點一下就有答案：': 'Common questions — tap one for an instant answer:',
     '支持微信、支付宝、USDT、TRX，下單按提示付款即可': 'We accept WeChat Pay, Alipay, USDT and TRX. Place your order and pay as prompted.',
     '支持微信、支付宝、USDT、TRX': 'We accept WeChat Pay, Alipay, USDT and TRX.',
     '付款成功，立即自動發貨': 'Payment confirmed — delivered automatically right away.',
-    '產品詳情裡有使用方法和視頻教程': 'The product page has full instructions and a video tutorial.',
     '產品詳情裡有使用方法和視頻教程': 'The product page has full instructions and a video tutorial.',
     '付款顯示未支付可能網絡延遲，可點「查訂單」後「本機查詢」': 'If payment shows as unpaid, it is likely a network delay. Tap Order Lookup, then This Device to check.', '未送達，請稍後再試或用電報聯繫': 'Not delivered. Please try again later or contact us on Telegram',
     '分享這個網站': 'Share this site', '複製鏈接': 'Copy link', '系統分享': 'System share', '二維碼': 'QR code', '掃碼打開': 'Scan to open', '長按二維碼保存圖片': 'Long-press the QR code to save it', '保存圖片': 'Save image', '返回': 'Back', '添加到主屏幕': 'Add to Home Screen', '已複製': 'Copied', '關閉': 'Close',
