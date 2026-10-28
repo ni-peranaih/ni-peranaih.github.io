@@ -3098,7 +3098,7 @@ var qrcode = function() {
       const r = await get('/chat?sid=' + sid + '&after=' + last + (lastBad ? '&chk=1' : ''));
       if (lastBad && r.vd === 1 && lastV) { lastV.textContent = '已送達'; lastBad = false; } // 之前推送失败的消息后来补发成功了
       $('chatSt').className = r.on ? 'on' : '';
-      $('chatSt').textContent = r.on ? '● 客服在線，通常幾分鐘內回覆' : r.off ? '現在不在營業時間（' + r.hours.replace('-', ':00–') + ':00），留言後上線會回覆' : '客服暫時離線，留言後會盡快回覆，急事請用電報 @qqusbot';
+      $('chatSt').textContent = r.on ? '● 客服在線，通常幾分鐘內回覆' : '客服暫時離線，留言後會盡快回覆，急事請用電報 @qqusbot';
       r.msgs.forEach(m => {
         if (m.id <= last) return; // 已顯示過（並發輪詢返回了同一批消息）
         const b = el('bub' + (m.side === 'v' ? ' me' : ''), m.text);
@@ -3215,14 +3215,13 @@ var qrcode = function() {
     '分享這個網站': 'Share this site', '複製鏈接': 'Copy link', '系統分享': 'System share', '二維碼': 'QR code', '掃碼打開': 'Scan to open', '長按二維碼保存圖片': 'Long-press the QR code to save it', '保存圖片': 'Save image', '返回': 'Back', '添加到主屏幕': 'Add to Home Screen', '已複製': 'Copied', '關閉': 'Close',
     '點瀏覽器的「分享」或「菜單」按鈕，再選「添加到主屏幕」，就能把藏寶閣放到桌面，像 App 一樣打開。': 'Tap your browser Share or Menu button, then choose Add to Home Screen to put Treasure Pavilion on your home screen like an app.',
     '改答算術題': 'Answer a math question instead', '已切換為算術題': 'Switched to a math question', '付款 · 發貨 · 使用': 'Payment · Delivery · How to use',
-    '💬 新回覆': '💬 New reply', '已收到，客服上線後會盡快回覆你。': 'Received. We will reply as soon as support is back online.', '現在不在營業時間，明早回覆你。': 'We are outside business hours and will reply tomorrow morning.'
+    '💬 新回覆': '💬 New reply', '已收到，客服上線後會盡快回覆你。': 'Received. We will reply as soon as support is back online.'
   };
   const ENRE = [
     [/^訪問 (\d+)$/, m => 'Views ' + m[1]],
     [/^驗證失敗（錯誤碼 (.+)），已切換為算術題$/, m => 'Verification failed (code ' + m[1] + ') — switched to a math question'],
     [/^驗證失敗（錯誤碼 (.+)），改答算術題：(.+) = \?$/, m => 'Verification failed (code ' + m[1] + '). Answer instead: ' + m[2] + ' = ?'],
     [/^改答算術題：(.+) = \?$/, m => 'Answer instead: ' + m[1] + ' = ?'],
-    [/^現在不在營業時間（(.+)），留言後上線會回覆$/, m => 'Outside business hours (Beijing time ' + m[1] + '). Leave a message and we will reply once online'],
     [/^為防止騷擾，請先回答：(.+)$/, m => 'To prevent spam, please answer: ' + m[1]]
   ];
   const enConv = s => {
