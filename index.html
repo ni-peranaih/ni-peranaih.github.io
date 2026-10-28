@@ -366,8 +366,14 @@
   .qa2:last-child{ border-bottom:none; }
   .qa2 h3{ margin:0 0 7px; font-size:calc(15.5px * var(--fs)); font-weight:600; }
   .qa2 p{ margin:0; padding:11px 13px; font-size:calc(14.5px * var(--fs)); line-height:1.7; color:var(--ink-dim); background:rgba(255,255,255,0.05); border-radius:10px; }
-  #faqBoard{ margin-top:26px; }
-  #faqBoard + .link-row{ border-top:1px solid var(--rule); }
+  .faq-row{ border-bottom:1px solid var(--rule); }
+  .faq-row summary{ display:flex; align-items:center; justify-content:space-between; gap:14px; padding:17px 4px; cursor:pointer; list-style:none; color:var(--ink); transition:padding-left .2s ease, color .2s ease; }
+  .faq-row summary::-webkit-details-marker{ display:none; }
+  .faq-row summary:hover{ padding-left:10px; color:var(--accent); }
+  .faq-row summary:hover .link-arrow{ transform:translateX(3px); color:var(--accent); }
+  .faq-row[open] summary{ color:var(--accent); }
+  .faq-row[open] .link-arrow{ transform:rotate(90deg); color:var(--accent); }
+  .faq-row .faq-list{ padding-bottom:8px; }
   .sheet-ov{ position:fixed; inset:0; z-index:40; background:rgba(4,8,6,0.6); display:flex; align-items:flex-end; justify-content:center; }
   .sheet-ov[hidden]{ display:none; }
   .sheet{ width:min(430px, 100%); max-height:86dvh; overflow:auto; background:var(--bg-soft); border:1px solid var(--rule); border-bottom:none; border-radius:18px 18px 0 0; padding:18px 18px calc(18px + env(safe-area-inset-bottom, 0px)); animation:sheetUp .22s ease; }
@@ -425,8 +431,11 @@
       </a>
     </nav>
 
-    <details class="board" id="faqBoard">
-      <summary>常見問題</summary>
+    <details class="faq-row" id="faqRow">
+      <summary>
+        <span class="link-main"><span class="link-label">常見問題</span><span class="link-desc">付款 / 到賬 / 使用</span></span>
+        <span class="link-arrow">→</span>
+      </summary>
       <div class="faq-list">
         <div class="qa2"><h3>怎麼付款</h3><p>支持微信、支付宝、USDT、TRX，下單按提示付款即可</p></div>
         <div class="qa2"><h3>多久到賬</h3><p>付款成功，立即自動發貨</p></div>
@@ -510,7 +519,7 @@
   const list = document.getElementById('linkList');
   // 排序：客服支援移到「常見問題」下面（常見問題緊跟鏈接列表）
   const placeSupport = () => {
-    const faq = document.getElementById('faqBoard');
+    const faq = document.getElementById('faqRow');
     const row = list.querySelector('[data-id="客服支援"]');
     if (faq && row) faq.after(row);
   };
@@ -3007,18 +3016,39 @@ var qrcode = function() {
   });
 
   // 人機驗證：服務器配置了 Turnstile 就用它，否則用算術題
-  let site = '';
-  const tsRender = async (box, cb) => {
+  let site = '', tsFb = false; // tsFb：服务器是否允许算术题兜底（/q 回应带 fb 才允许，TS_FALLBACK=off 时不带）
+  const tsRender = async (box, cb, onErr) => {
     if (!window.turnstile) await new Promise(res => { const s = el('', '', 'script'); s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; s.onload = s.onerror = res; document.head.append(s); });
-    return window.turnstile ? turnstile.render(box, { sitekey: site, theme: 'dark', callback: cb }) : null;
+    if (!window.turnstile) return null;
+    try { return turnstile.render(box, { sitekey: site, theme: 'dark', callback: cb, 'error-callback': c => { if (onErr) onErr(c || 'error'); }, 'expired-callback': () => { if (onErr) onErr('expired'); } }); }
+    catch { return null; }
   };
 
   // 留言板（驗證、置頂、回覆）
-  let loaded = false, tok = '', tsTok = '', wid = null;
+  let loaded = false, tok = '', tsTok = '', wid = null, gbMath = false, gbTimer = null;
+  const gbToMath = async code => {
+    // Turnstile 出錯、腳本加載不出或瀏覽器不支持時自動切換；code 有值時多顯示一句帶錯誤碼的提示
+    try {
+      const r = await get('/q?fb=1');
+      if (!r.q) { $('mTip').textContent = '驗證組件加載失敗，請檢查網絡或關閉攔截插件後重試'; return; }
+      gbMath = true; clearTimeout(gbTimer);
+      $('mTs').innerHTML = ''; wid = null; tsTok = '';
+      tok = r.tok; $('mQ').textContent = r.q + ' ='; $('mA').value = ''; $('mCap').hidden = false;
+      $('mTip').textContent = code ? '驗證失敗（錯誤碼 ' + code + '），已切換為算術題' : '已切換為算術題';
+    } catch {}
+  };
   const loadQ = async () => {
     try {
+      if (gbMath) { const r = await get('/q?fb=1'); if (r.q) { tok = r.tok; $('mQ').textContent = r.q + ' ='; $('mA').value = ''; } return; }
       const r = await get('/q');
-      if (r.site) { site = r.site; $('mCap').hidden = true; tsTok = ''; if (wid === null) { wid = await tsRender($('mTs'), t => { tsTok = t; }); if (wid === null) $('mTip').textContent = '驗證組件加載失敗，請檢查網絡或關閉攔截插件後重試'; } else turnstile.reset(wid); }
+      if (r.site) {
+        site = r.site; tsFb = !!r.fb; $('mCap').hidden = true; tsTok = '';
+        if (wid === null) {
+          wid = await tsRender($('mTs'), t => { tsTok = t; clearTimeout(gbTimer); }, code => { if (tsFb) gbToMath(code); else $('mTip').textContent = '驗證失敗（錯誤碼 ' + code + '），請重試'; });
+          if (wid === null) { if (tsFb) gbToMath('load'); else $('mTip').textContent = '驗證組件加載失敗，請檢查網絡或關閉攔截插件後重試'; }
+          else if (tsFb) { clearTimeout(gbTimer); gbTimer = setTimeout(() => { if (!tsTok) gbToMath(''); }, 12000); } // 卡住 12 秒还没通过：自动切算术题
+        } else turnstile.reset(wid);
+      }
       else { tok = r.tok; $('mQ').textContent = r.q + ' ='; $('mA').value = ''; }
     } catch {}
   };
@@ -3036,7 +3066,7 @@ var qrcode = function() {
   });
   $('mSend').onclick = async () => {
     const text = $('mText').value.trim(); if (!text) return;
-    if (site && !tsTok) { $('mTip').textContent = '請先完成上方的驗證'; return; }
+    if (site && !gbMath && !tsTok) { $('mTip').textContent = '請先完成上方的驗證'; return; }
     $('mSend').disabled = true;
     try {
       const r = await post('/msg', { name: $('mName').value, text, tok, ans: $('mA').value, ts: tsTok });
@@ -3092,7 +3122,23 @@ var qrcode = function() {
   const ask = async () => {
     try {
       const q = await get('/q');
-      if (q.site) { site = q.site; const b = el('bub', '為防止騷擾，請先完成驗證：'), box = el(''); b.append(box); log.append(b); if (!(await tsRender(box, t => { b.remove(); deliver({ ts: t }); }))) b.textContent = '驗證組件加載失敗，請檢查網絡或關閉攔截插件後重試'; }
+      if (q.site) {
+        site = q.site; tsFb = !!q.fb;
+        const b = el('bub', '為防止騷擾，請先完成驗證：'), box = el(''); b.append(box); log.append(b);
+        let done = false, timer = null;
+        const toMath = async code => {
+          if (done) return; done = true; clearTimeout(timer);
+          try {
+            const r = await get('/q?fb=1');
+            if (r.q) { ctok = r.tok; b.textContent = (code ? '驗證失敗（錯誤碼 ' + code + '），改答算術題：' : '改答算術題：') + r.q + ' = ?'; }
+            else b.textContent = '驗證組件加載失敗，請檢查網絡或關閉攔截插件後重試';
+          } catch { b.textContent = '網絡錯誤，請重試'; }
+          log.scrollTop = log.scrollHeight;
+        };
+        const w = await tsRender(box, t => { done = true; clearTimeout(timer); b.remove(); deliver({ ts: t }); }, code => { if (tsFb) toMath(code); });
+        if (w === null || w === undefined) { if (tsFb) toMath('load'); else if (!done) b.textContent = '驗證組件加載失敗，請檢查網絡或關閉攔截插件後重試'; }
+        else if (tsFb) { timer = setTimeout(() => { toMath(''); }, 12000); } // 卡住 12 秒还没通过：自动切算术题
+      }
       else { ctok = q.tok; log.append(el('bub', '為防止騷擾，請先回答：' + q.q + ' = ?')); }
       log.scrollTop = log.scrollHeight;
     } catch {}
@@ -3171,10 +3217,14 @@ var qrcode = function() {
     '付款顯示未支付可能網絡延遲，可點「查訂單」後「本機查詢」': 'If payment shows as unpaid, it is likely a network delay. Tap Order Lookup, then This Device to check.', '未送達，請稍後再試或用電報聯繫': 'Not delivered. Please try again later or contact us on Telegram',
     '分享這個網站': 'Share this site', '複製鏈接': 'Copy link', '系統分享': 'System share', '二維碼': 'QR code', '掃碼打開': 'Scan to open', '長按二維碼保存圖片': 'Long-press the QR code to save it', '保存圖片': 'Save image', '返回': 'Back', '添加到主屏幕': 'Add to Home Screen', '已複製': 'Copied', '關閉': 'Close',
     '點瀏覽器的「分享」或「菜單」按鈕，再選「添加到主屏幕」，就能把藏寶閣放到桌面，像 App 一樣打開。': 'Tap your browser Share or Menu button, then choose Add to Home Screen to put Treasure Pavilion on your home screen like an app.',
+    '改答算術題': 'Answer a math question instead', '已切換為算術題': 'Switched to a math question', '付款 / 到賬 / 使用': 'Payment / Delivery / How to use',
     '💬 新回覆': '💬 New reply', '已收到，客服上線後會盡快回覆你。': 'Received. We will reply as soon as support is back online.', '現在不在營業時間，明早回覆你。': 'We are outside business hours and will reply tomorrow morning.'
   };
   const ENRE = [
     [/^訪問 (\d+)$/, m => 'Views ' + m[1]],
+    [/^驗證失敗（錯誤碼 (.+)），已切換為算術題$/, m => 'Verification failed (code ' + m[1] + ') — switched to a math question'],
+    [/^驗證失敗（錯誤碼 (.+)），改答算術題：(.+) = \?$/, m => 'Verification failed (code ' + m[1] + '). Answer instead: ' + m[2] + ' = ?'],
+    [/^改答算術題：(.+) = \?$/, m => 'Answer instead: ' + m[1] + ' = ?'],
     [/^現在不在營業時間（(.+)），留言後上線會回覆$/, m => 'Outside business hours (Beijing time ' + m[1] + '). Leave a message and we will reply once online'],
     [/^為防止騷擾，請先回答：(.+)$/, m => 'To prevent spam, please answer: ' + m[1]]
   ];
