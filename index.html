@@ -802,6 +802,7 @@
     $('mSend').disabled = true;
     try {
       const r = await post('/msg', { name: $('mName').value, text, tok, ans: $('mA').value, ts: tsTok });
+      tsTok = ''; // 令牌提交即作廢：先清掉，免得驗證重置完成前被快速重複提交
       $('mTip').textContent = r.ok ? '已提交，審核通過後顯示' : r.err === 'cap' ? '驗證沒通過，請重試' : r.err === 'rate' ? '提交太頻繁，請稍後再試' : '提交失敗，請重試';
       if (r.ok) $('mText').value = '';
       loadQ();
@@ -900,8 +901,9 @@
     setTimeout(tipHide, 15000);
   }, 1200);
   // 第一次發言前要驗證：先暫存這條消息，驗證通過後自動（Turnstile）或在下一次輸入答案後（算術題）發出
-  let held = null, ctok = '';
+  let held = null, ctok = '', asking = false;
   const ask = async () => {
+    if (asking) return; asking = true;
     try {
       const q = await get('/q');
       if (q.site) {
@@ -909,7 +911,7 @@
         const b = el('bub', '為防止騷擾，請先完成驗證：'), box = el(''); b.append(box); log.append(b);
         let done = false, timer = null;
         const toMath = async code => {
-          if (done) return; done = true; clearTimeout(timer);
+          if (done) return; done = true; asking = false; clearTimeout(timer);
           try {
             const r = await get('/q?fb=1');
             if (r.q) { ctok = r.tok; b.textContent = (code ? '驗證失敗（錯誤碼 ' + code + '），改答算術題：' : '改答算術題：') + r.q + ' = ?'; }
@@ -917,13 +919,13 @@
           } catch { b.textContent = '網絡錯誤，請重試'; }
           log.scrollTop = log.scrollHeight;
         };
-        const w = await tsRender(box, t => { done = true; clearTimeout(timer); b.remove(); deliver({ ts: t }); }, code => { if (tsFb) toMath(code); });
-        if (w === null || w === undefined) { if (tsFb) toMath('load'); else if (!done) b.textContent = '驗證組件加載失敗，請檢查網絡或關閉攔截插件後重試'; }
+        const w = await tsRender(box, t => { if (done) return; done = true; asking = false; clearTimeout(timer); b.remove(); deliver({ ts: t }); }, code => { if (tsFb) toMath(code); });
+        if (w === null || w === undefined) { if (tsFb) toMath('load'); else { asking = false; if (!done) b.textContent = '驗證組件加載失敗，請檢查網絡或關閉攔截插件後重試'; } }
         else if (tsFb) { timer = setTimeout(() => { toMath(''); }, 15000); } // 卡住 15 秒还没通过：自动切算术题
       }
-      else { ctok = q.tok; log.append(el('bub', '為防止騷擾，請先回答：' + q.q + ' = ?')); }
+      else { asking = false; ctok = q.tok; log.append(el('bub', '為防止騷擾，請先回答：' + q.q + ' = ?')); }
       log.scrollTop = log.scrollHeight;
-    } catch {}
+    } catch { asking = false; }
   };
   const deliver = async extra => {
     try {
@@ -937,6 +939,7 @@
     const t = $('chatTxt'), text = t.value.trim(); if (!text) return;
     t.value = ''; lastAct = Date.now();
     if (held && ctok) { log.append(el('bub me', text)); return deliver({ tok: ctok, ans: text }); }
+    if (held) { held = text; if (!asking) ask(); return; } // 驗證還沒過：只更新待發消息，不重複彈驗證、不重複提交
     held = text; deliver({});
   };
   $('chatSend').onclick = send;
