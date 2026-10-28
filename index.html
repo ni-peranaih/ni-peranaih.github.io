@@ -337,6 +337,7 @@
   .chat-hd{ padding:12px 14px; font-size:15px; color:var(--accent); border-bottom:1px solid var(--rule); }
   .chat-hd small{ display:block; margin-top:2px; font-size:12px; color:var(--ink-dim); }
   .chat-hd small.on{ color:var(--accent); }
+  .chat-hd small a{ color:var(--accent); text-decoration:underline; text-underline-offset:2px; }
   .chat-log{ flex:1; display:flex; flex-direction:column; gap:8px; padding:12px; overflow-y:auto; }
   .bub{ align-self:flex-start; max-width:82%; padding:8px 12px; font-size:14px; line-height:1.5; word-break:break-word; background:var(--bg-soft); border-radius:12px; }
   .bub.me{ align-self:flex-end; background:rgba(196,160,106,0.22); }
@@ -716,7 +717,7 @@
 <div class="fab-tip" id="fabTip" hidden>有問題？點我在線諮詢<span class="fab-tip-x" id="fabTipX" aria-hidden="true">✕</span></div>
 <button class="chat-fab" id="chatFab" type="button" aria-label="在線客服"><span class="fab-ic">💬</span><span class="fab-tx">在線客服</span></button>
 <div class="chat" id="chat">
-  <div class="chat-hd">在線客服<button type="button" class="sheet-x chat-x" id="chatX" aria-label="關閉">✕</button><small id="chatSt">客服暫時離線，留言後會盡快回覆，急事請用電報 @qqusbot</small></div>
+  <div class="chat-hd">在線客服<button type="button" class="sheet-x chat-x" id="chatX" aria-label="關閉">✕</button><small id="chatSt">客服暫時離線，留言後會盡快回覆，急事請用電報 <a class="tg-link" href="https://t.me/qqusbot" target="_blank" rel="noopener">@qqusbot</a></small></div>
   <div class="chat-log" id="chatLog"></div>
   <div class="chips" id="chips"><span class="chips-t">常見問題，點一下就有答案：</span><div class="chips-r"><button type="button" data-q="pay">怎麼付款</button><button type="button" data-q="time">多久發貨</button><button type="button" data-q="use">怎麼使用</button></div></div>
   <div class="chat-ct" id="chatCt" hidden><div class="ct-t">留個聯繫方式，客服上線後通知你</div><div class="ct-r"><input id="ctTxt" maxlength="40" placeholder="Telegram / 微信 / QQ / 郵箱"><button class="btn" id="ctSend" type="button">提交</button></div></div>
@@ -852,7 +853,8 @@
       const r = await get('/chat?sid=' + sid + '&after=' + last + (lastBad ? '&chk=1' : ''));
       if (lastBad && r.vd === 1 && lastV) { lastV.textContent = '已送達'; lastBad = false; } // 之前推送失败的消息后来补发成功了
       $('chatSt').className = r.on ? 'on' : '';
-      $('chatSt').textContent = r.on ? '● 客服在線，通常幾分鐘內回覆' : '客服暫時離線，留言後會盡快回覆，急事請用電報 @qqusbot';
+      if (r.on) $('chatSt').textContent = '● 客服在線，通常幾分鐘內回覆';
+      else $('chatSt').innerHTML = '客服暫時離線，留言後會盡快回覆，急事請用電報 <a class="tg-link" href="https://t.me/qqusbot" target="_blank" rel="noopener">@qqusbot</a>';
       if (!r.on && store.get('chatted') && !store.get('ctLeft')) ctShow();
       r.msgs.forEach(m => {
         if (m.id <= last) return; // 已顯示過（並發輪詢返回了同一批消息）
@@ -966,7 +968,7 @@
     '請先完成上方的驗證': 'Please complete the verification above first', '驗證組件加載失敗，請檢查網絡或關閉攔截插件後重試': 'Verification failed to load. Check your network or disable blockers and retry', '已提交，審核通過後顯示': 'Submitted — it will appear after review',
     '驗證沒通過，請重試': 'Verification failed, please retry', '提交太頻繁，請稍後再試': 'Submitting too fast, please try again later', '提交失敗，請重試': 'Submit failed, please retry', '網絡錯誤，請重試': 'Network error, please retry',
     '在線客服': 'Live Support', '● 客服在線，通常幾分鐘內回覆': '● Support is online, usually replies within minutes',
-    '客服暫時離線，留言後會盡快回覆，急事請用電報 @qqusbot': 'Support is offline. Leave a message and we will reply soon. For urgent matters, use Telegram @qqusbot',
+    '客服暫時離線，留言後會盡快回覆，急事請用電報': 'Support is offline. Leave a message and we will reply soon. For urgent matters, use Telegram',
     '留下電報用戶名或聯繫方式，客服離線中，上線後會主動聯繫你': 'Leave your Telegram username or contact. Support is offline and will reach out once back online',
     '留下電報用戶名或聯繫方式': 'Leave your Telegram username or contact',
     '提交': 'Submit', '發送': 'Send', '輸入消息': 'Type a message', '你好，有什麼可以幫你？': 'Hi, how can we help?', '歡迎回來': 'Welcome back', '有問題？點我在線諮詢': 'Questions? Tap to chat with us', '熱門': 'HOT', '新': 'NEW',
