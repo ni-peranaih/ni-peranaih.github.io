@@ -690,7 +690,6 @@
   <div class="chat-hd">在線客服<small id="chatSt">客服暫時離線，留言後會盡快回覆，急事請用電報 @qqusbot</small></div>
   <div class="chat-log" id="chatLog"></div>
   <div class="chips" id="chips"><span class="chips-t">常見問題，點一下就有答案：</span><div class="chips-r"><button type="button" data-q="pay">怎麼付款</button><button type="button" data-q="time">多久發貨</button><button type="button" data-q="use">怎麼使用</button><button type="button" data-q="other">其他問題</button></div></div>
-  <div class="chat-ct" id="chatCt" hidden><div class="ct-wrap"><input id="ctTxt" maxlength="40" placeholder=" " aria-label="留下電報用戶名或聯繫方式"><div class="ct-hint" id="ctHint"><span><b>留下電報用戶名或聯繫方式，客服離線中，上線後會主動聯繫你</b><b aria-hidden="true">留下電報用戶名或聯繫方式，客服離線中，上線後會主動聯繫你</b></span></div></div><button class="btn" id="ctSend" type="button">提交</button></div>
   <div class="chat-in"><input id="chatTxt" maxlength="500" placeholder="輸入消息"><button class="btn" id="chatSend" type="button">發送</button></div>
 </div>
 
@@ -3100,8 +3099,6 @@ var qrcode = function() {
       if (lastBad && r.vd === 1 && lastV) { lastV.textContent = '已送達'; lastBad = false; } // 之前推送失败的消息后来补发成功了
       $('chatSt').className = r.on ? 'on' : '';
       $('chatSt').textContent = r.on ? '● 客服在線，通常幾分鐘內回覆' : r.off ? '現在不在營業時間（' + r.hours.replace('-', ':00–') + ':00），留言後上線會回覆' : '客服暫時離線，留言後會盡快回覆，急事請用電報 @qqusbot';
-      $('chatCt').hidden = !(!r.on && !store.get('ct'));
-      if (!$('chatCt').hidden) fit();
       r.msgs.forEach(m => {
         if (m.id <= last) return; // 已顯示過（並發輪詢返回了同一批消息）
         const b = el('bub' + (m.side === 'v' ? ' me' : ''), m.text);
@@ -3153,7 +3150,7 @@ var qrcode = function() {
   const deliver = async extra => {
     try {
       const r = await post('/chat/send', { sid, text: held, ...extra });
-      if (r.ok) { held = null; ctok = ''; store.set('chatted', '1'); loop(); }
+      if (r.ok) { held = null; ctok = ''; store.set('chatted', '1'); $('chips').hidden = true; loop(); }
       else if (r.err === 'cap') { if (extra.ans !== undefined) log.append(el('bub', '答案不對，請重新計算')); ask(); }
       else { held = null; log.append(el('bub', r.err === 'rate' ? '發送太頻繁，請稍後再試' : '發送失敗，請重試')); }
     } catch { held = null; log.append(el('bub', '網絡錯誤，請重試')); }
@@ -3186,13 +3183,6 @@ var qrcode = function() {
     log.append(el('bub me', b.textContent), el('bub', FAQ[b.dataset.q]));
     log.scrollTop = log.scrollHeight;
   });
-  $('ctSend').onclick = async () => {
-    const contact = $('ctTxt').value.trim(); if (!contact) return;
-    try {
-      const r = await post('/chat/contact', { sid, contact });
-      if (r.ok) { store.set('ct', '1'); $('chatCt').hidden = true; log.append(el('bub', '已記下，上線後會主動聯繫你')); } else log.append(el('bub', '提交失敗，請重試'));
-    } catch { log.append(el('bub', '網絡錯誤，請重試')); }
-  };
   loop();
 
   // 語言切換：繁 / 简 / EN（偏好記在本機）。簡體用 OpenCC（點擊時才加載），英文用下面的內置對照表
