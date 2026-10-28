@@ -342,6 +342,7 @@
   .chat-log{ flex:1; display:flex; flex-direction:column; gap:8px; padding:12px; overflow-y:auto; }
   .bub{ align-self:flex-start; max-width:82%; padding:8px 12px; font-size:14px; line-height:1.5; word-break:break-word; background:var(--bg-soft); border-radius:12px; }
   .bub.me{ align-self:flex-end; background:rgba(196,160,106,0.22); }
+  .bub.pass{ align-self:center; max-width:none; padding:5px 14px; font-size:13px; color:#7bd88f; background:rgba(82,196,120,0.14); border-radius:999px; }
   .chat-in{ display:flex; gap:8px; padding:10px; border-top:1px solid var(--rule); }
   .chat-in .btn{ align-self:auto; }
   .notice{ margin:0 0 28px; padding:10px 14px; font-size:calc(14px * var(--fs)); line-height:1.6; word-break:break-word; background:rgba(196,160,106,0.1); border-left:2px solid var(--accent); }
@@ -482,7 +483,7 @@
         <input id="mName" maxlength="20" placeholder="暱稱（選填）" autocomplete="nickname">
         <textarea id="mText" maxlength="300" placeholder="寫下你的留言，審核通過後顯示"></textarea>
         <div id="mTs"></div>
-        <div class="cap" id="mCap"><span id="mQ"></span><input id="mA" inputmode="numeric" maxlength="3" placeholder="答案" autocomplete="off"></div>
+        <div class="cap" id="mCap" hidden><span id="mQ"></span><input id="mA" inputmode="numeric" maxlength="3" placeholder="答案" autocomplete="off"></div>
         <span class="tip" id="mTip"></span>
         <button class="btn" id="mSend" type="button">提交留言</button>
       </div>
@@ -780,7 +781,7 @@
           else if (tsFb) { clearTimeout(gbTimer); gbTimer = setTimeout(() => { if (!tsTok) gbToMath(''); }, 15000); } // 卡住 15 秒还没通过：自动切算术题
         } else turnstile.reset(wid);
       }
-      else { tok = r.tok; $('mQ').textContent = r.q + ' ='; $('mA').value = ''; }
+      else { tok = r.tok; $('mCap').hidden = false; $('mQ').textContent = r.q + ' ='; $('mA').value = ''; }
     } catch {}
   };
   $('board').addEventListener('toggle', async () => {
@@ -927,7 +928,7 @@
   const deliver = async extra => {
     try {
       const r = await post('/chat/send', { sid, text: held, ...extra });
-      if (r.ok) { held = null; ctok = ''; store.set('chatted', '1'); $('chips').hidden = true; loop(); }
+      if (r.ok) { held = null; ctok = ''; store.set('chatted', '1'); $('chips').hidden = true; if (extra.ts !== undefined || extra.ans !== undefined) { const p = el('bub pass', '✓ 驗證通過'); log.append(p); log.scrollTop = log.scrollHeight; setTimeout(() => p.remove(), 2500); } loop(); }
       else if (r.err === 'cap') { if (extra.ans !== undefined) log.append(el('bub', '答案不對，請重新計算')); else if (extra.ts) log.append(el('bub', '驗證沒通過，請重新完成驗證')); ask(); }
       else { held = null; log.append(el('bub', r.err === 'rate' ? '發送太頻繁，請稍後再試' : '發送失敗，請重試')); }
     } catch { held = null; log.append(el('bub', '網絡錯誤，請重試')); }
@@ -970,7 +971,7 @@
     '客服暫時離線，留言後會盡快回覆，急事請用電報': 'Support is offline. Leave a message and we will reply soon. For urgent matters, use Telegram',
     '提交': 'Submit', '發送': 'Send', '輸入消息': 'Type a message', '你好，有什麼可以幫你？': 'Hi, how can we help?', '歡迎回來': 'Welcome back', '有問題？點我在線諮詢': 'Questions? Tap to chat with us', '熱門': 'HOT', '新': 'NEW',
     '留個聯繫方式': 'Leave a contact', 'Telegram / 微信 / QQ / 郵箱': 'Telegram / WeChat / QQ / Email', '已收到，客服上線後會聯繫你': 'Got it — we will reach out when support is back',
-    '為防止騷擾，請先完成驗證：': 'To prevent spam, please complete the verification:', '答案不對，請重新計算': 'Wrong answer, please try again', '驗證沒通過，請重新完成驗證': 'Verification failed — please complete it again',
+    '為防止騷擾，請先完成驗證：': 'To prevent spam, please complete the verification:', '答案不對，請重新計算': 'Wrong answer, please try again', '驗證沒通過，請重新完成驗證': 'Verification failed — please complete it again', '✓ 驗證通過': '✓ Verified',
     '發送太頻繁，請稍後再試': 'Sending too fast, please try again later', '發送失敗，請重試': 'Failed to send, please retry',
     '已送達': 'Delivered',
     '常見問題': 'FAQ', '怎麼付款': 'How do I pay?', '多久發貨': 'How fast is delivery?', '怎麼使用': 'How do I use it?',
