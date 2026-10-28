@@ -585,7 +585,7 @@
 <div class="chat" id="chat">
   <div class="chat-hd">在線客服<small id="chatSt">客服暫時離線，留言後會盡快回覆，急事請用電報 @qqusbot</small></div>
   <div class="chat-log" id="chatLog"></div>
-  <div class="chips" id="chips"><span class="chips-t">常見問題，點一下就有答案：</span><div class="chips-r"><button type="button">怎麼付款</button><button type="button">多久到賬</button><button type="button">怎麼使用</button><button type="button">已下單出問題</button><button type="button">其他問題</button></div></div>
+  <div class="chips" id="chips"><span class="chips-t">常見問題，點一下就有答案：</span><div class="chips-r"><button type="button" data-q="pay">怎麼付款</button><button type="button" data-q="time">多久到賬</button><button type="button" data-q="use">怎麼使用</button><button type="button" data-q="order">已下單出問題</button><button type="button" data-q="other">其他問題</button></div></div>
   <div class="chat-ct" id="chatCt" hidden><div class="ct-wrap"><input id="ctTxt" maxlength="40" placeholder=" " aria-label="留下電報用戶名或聯繫方式"><div class="ct-hint" id="ctHint"><span><b>留下電報用戶名或聯繫方式，客服離線中，上線後會主動聯繫你</b><b aria-hidden="true">留下電報用戶名或聯繫方式，客服離線中，上線後會主動聯繫你</b></span></div></div><button class="btn" id="ctSend" type="button">提交</button></div>
   <div class="chat-in"><input id="chatTxt" maxlength="500" placeholder="輸入消息"><button class="btn" id="chatSend" type="button">發送</button></div>
 </div>
@@ -735,16 +735,15 @@
   window.addEventListener('resize', fit);
   // 常見問題快捷按鈕：本地自動回覆，不走驗證；聊過天后不再顯示
   const FAQ = {
-    '怎麼付款': '支持微信、支付宝、USDT、TRX',
-    '多久到賬': '付款成功，立即自動發貨',
-    '怎麼使用': '產品詳情裡有使用方法和視頻教程',
-    '已下單出問題': '付款顯示未支付可能網絡延遲，可點「查訂單」後「本機查詢」'
+    pay: '支持微信、支付宝、USDT、TRX',
+    time: '付款成功，立即自動發貨',
+    use: '產品詳情裡有使用方法和視頻教程',
+    order: '付款顯示未支付可能網絡延遲，可點「查訂單」後「本機查詢」'
   };
   $('chips').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
-    const q = b.textContent.trim();
-    if (!(q in FAQ)) { $('chatTxt').focus(); return; }
-    log.append(el('bub me', q), el('bub', FAQ[q]));
+    if (!(b.dataset.q in FAQ)) { $('chatTxt').focus(); return; }
+    log.append(el('bub me', b.textContent), el('bub', FAQ[b.dataset.q]));
     log.scrollTop = log.scrollHeight;
   });
   $('ctSend').onclick = async () => {
