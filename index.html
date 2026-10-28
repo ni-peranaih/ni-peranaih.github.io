@@ -73,21 +73,14 @@
       #12331f 100%
     );
     background-size: 260% 260%;
-    animation:
-      driftGradient 16s ease-in-out infinite,
-      hueSwing 5s linear infinite;
-    will-change: background-position, filter;
+    animation: driftGradient 32s ease-in-out infinite;
+    will-change: background-position;
   }
 
   @keyframes driftGradient{
     0%   { background-position: 0% 0%; }
     50%  { background-position: 100% 100%; }
     100% { background-position: 0% 0%; }
-  }
-
-  @keyframes hueSwing{
-    0%   { filter: hue-rotate(0deg) saturate(1.15); }
-    100% { filter: hue-rotate(360deg) saturate(1.15); }
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -281,6 +274,8 @@
     outline: none;
   }
 
+  .share-wrap{ display:flex; align-items:center; justify-content:center; gap:10px; margin-top:26px; }
+  .share-wrap .btn{ align-self:auto; }
   footer{
     text-align:center;
     margin-top: 48px;
@@ -394,6 +389,8 @@
         </span>
       </div>
     </nav>
+
+    <div class="share-wrap"><button class="btn" id="shareBtn" type="button">分享給朋友</button><span class="tip" id="shareTip"></span></div>
 
     <details class="board" id="board">
       <summary>留言板</summary>
@@ -545,6 +542,20 @@
     const ok = Array.isArray(rows) ? rows.filter(x => /^https?:\/\//i.test(x.url)) : [];
     if (ok.length) render(ok);
   }).catch(() => {});
+
+  // 分享按鈕：優先調起系統分享，不支持時複製連結
+  const shareBtn = document.getElementById('shareBtn');
+  if (shareBtn) shareBtn.onclick = async () => {
+    const data = { title: document.title, text: '藏寶閣｜海外賬號・科學上網・eSIM 導航', url: location.origin + '/' };
+    try {
+      if (navigator.share) { await navigator.share(data); return; }
+      throw 0;
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+      try { await navigator.clipboard.writeText(data.url); document.getElementById('shareTip').textContent = '連結已複製，去粘貼分享吧'; }
+      catch { document.getElementById('shareTip').textContent = data.url; }
+    }
+  };
 </script>
 
 <div class="lang-sw" id="langSw" role="group" aria-label="Language"><button type="button" data-l="tw">繁</button><button type="button" data-l="cn">简</button><button type="button" data-l="en">EN</button></div>
@@ -641,7 +652,7 @@
       if (lastBad && r.vd === 1 && lastV) { lastV.textContent = '已送達'; lastBad = false; } // 之前推送失败的消息后来补发成功了
       $('chatSt').className = r.on ? 'on' : '';
       $('chatSt').textContent = r.on ? '● 客服在線，通常幾分鐘內回覆' : r.off ? '現在不在營業時間（' + r.hours.replace('-', ':00–') + ':00），留言後上線會回覆' : '客服暫時離線，留言後會盡快回覆，急事請用電報 @qqusbot';
-      $('chatCt').hidden = !(!r.on && store.get('chatted') && !store.get('ct'));
+      $('chatCt').hidden = !(!r.on && !store.get('ct'));
       if (!$('chatCt').hidden) fit();
       r.msgs.forEach(m => {
         if (m.id <= last) return; // 已顯示過（並發輪詢返回了同一批消息）
@@ -710,7 +721,7 @@
 
   // 語言切換：繁 / 简 / EN（偏好記在本機）。簡體用 OpenCC（點擊時才加載），英文用下面的內置對照表
   const EN = {
-    '藏寶閣': 'Treasure Pavilion', '千帆過盡皆是客 洗盡鉛華誰人知': 'A thousand sails pass, all are guests; strip away the glamour — who will know?', '花開富貴': 'May Fortune Bloom',
+    '藏寶閣': 'Treasure Pavilion', '千帆過盡皆是客 洗盡鉛華誰人知': 'A thousand sails pass, all are guests; strip away the glamour — who will know?', '花開富貴': 'May Fortune Bloom', '分享給朋友': 'Share with friends', '連結已複製，去粘貼分享吧': 'Link copied — paste it anywhere to share',
     '海外賬號': 'Overseas Accounts', 'Telegram丨推特丨谷歌丨Facebook丨蘋果': 'Telegram | Twitter | Google | Facebook | Apple',
     '科學上網': 'Secure Internet Access', '穩定 · 安全 · 高速': 'Stable · Secure · Fast',
     '客服支援': 'Customer Support', '電報: @qqusbot': 'Telegram: @qqusbot', '電報': 'Telegram',

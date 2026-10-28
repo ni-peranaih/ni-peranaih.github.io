@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://npc.new.tg/sitemap.xml
