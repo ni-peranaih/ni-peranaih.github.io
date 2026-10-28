@@ -423,15 +423,6 @@
         </span>
         <span class="link-arrow">→</span>
       </a>
-      <div class="link-row multi">
-        <span class="link-main">
-          <span class="link-label">客服支援</span>
-          <span class="link-desc"><a href="https://t.me/qqusbot" target="_blank" rel="noopener noreferrer">電報: @qqusbot</a></span>
-        </span>
-        <span class="link-btns">
-          <a class="link-btn" href="https://t.me/qqusbot" target="_blank" rel="noopener noreferrer">電報</a>
-        </span>
-      </div>
     </nav>
 
     <details class="board" id="faqBoard">
@@ -478,13 +469,7 @@
   const links = [
     { label: "海外賬號",     desc: "Telegram丨推特丨谷歌丨Facebook丨蘋果",   url: "https://177444.xyz" },
     { label: "科學上網",  desc: "穩定 · 安全 · 高速",    url: "https://QIOAUO.快车.com" },
-    { label: "ESIM",  desc: "Free 500M",  url: "https://www.eskimo.travel/ZS26633" },
-    { label: "客服支援",     lines: [
-        { text: "電報: @qqusbot", url: "https://t.me/qqusbot" }
-      ],
-      buttons: [
-        { text: "電報", url: "https://t.me/qqusbot" }
-      ] }
+    { label: "ESIM",  desc: "Free 500M",  url: "https://www.eskimo.travel/ZS26633" }
   ];
 
   // ────────────────────────────────────────────────
@@ -531,6 +516,7 @@
   };
   const render = items => {
   list.innerHTML = ''; // 清空旧链接，防止重复生成
+  items = items.filter(x => x.label !== '客服支援'); // 客服統一走網頁在線客服，這一行不再顯示（機器人那邊的數據保留）
   items.forEach(item => {
     if (item.buttons) {
       const row = document.createElement('div');
