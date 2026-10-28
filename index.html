@@ -897,7 +897,7 @@
   if (!store.get('chatted') && !store.get('fabTip')) setTimeout(() => {
     if (open() || store.get('chatted')) return;
     store.set('fabTip', '1'); $('fabTip').hidden = false;
-    setTimeout(tipHide, 8000);
+    setTimeout(tipHide, 15000);
   }, 1200);
   // 第一次發言前要驗證：先暫存這條消息，驗證通過後自動（Turnstile）或在下一次輸入答案後（算術題）發出
   let held = null, ctok = '';
