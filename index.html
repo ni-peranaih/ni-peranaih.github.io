@@ -304,11 +304,11 @@
   .btn{ align-self:flex-end; padding:8px 16px; font:inherit; font-size:calc(14px * var(--fs)); color:var(--accent); background:transparent; border:1px solid var(--accent); border-radius:999px; cursor:pointer; }
   .btn:disabled{ opacity:0.5; }
   .tip{ min-height:1.2em; font-size:calc(13px * var(--fs)); color:var(--ink-dim); }
-  .share-fab{ position:fixed; right:18px; bottom:calc(84px + env(safe-area-inset-bottom, 0px)); z-index:5; width:54px; height:54px; display:flex; align-items:center; justify-content:center; color:var(--accent); background:var(--bg); border:1px solid var(--accent); border-radius:50%; box-shadow:0 4px 18px rgba(0,0,0,0.35); cursor:pointer; }
   .share-tip{ position:fixed; right:18px; bottom:calc(150px + env(safe-area-inset-bottom, 0px)); z-index:6; padding:7px 12px; font-size:13px; color:var(--ink); background:var(--bg-soft); border:1px solid var(--rule); border-radius:999px; box-shadow:0 4px 18px rgba(0,0,0,0.35); }
   .share-tip[hidden]{ display:none; }
-  .share-pill{ display:flex; align-items:center; gap:8px; width:fit-content; margin:0 auto 34px; padding:8px 16px; font:inherit; font-size:calc(14.5px * var(--fs)); color:var(--ink-dim); background:rgba(255,255,255,0.07); border:1px solid var(--rule); border-radius:999px; cursor:pointer; }
-  .share-pill svg{ color:var(--accent); flex:none; }
+  .share-pill{ display:flex; align-items:center; gap:8px; width:fit-content; margin:0 auto 28px; padding:7px 15px; font:inherit; font-size:calc(14.5px * var(--fs)); color:var(--ink); background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.05); border-radius:999px; cursor:pointer; }
+  .share-pill svg{ color:var(--accent); flex:none; display:block; }
+  .share-pill span{ line-height:1; }
   .chat-fab{ position:fixed; right:18px; bottom:calc(18px + env(safe-area-inset-bottom, 0px)); z-index:5; width:54px; height:54px; font-size:22px; color:var(--accent); background:var(--bg); border:1px solid var(--accent); border-radius:50%; box-shadow:0 4px 18px rgba(0,0,0,0.35); cursor:pointer; }
   .chat{ position:fixed; right:14px; bottom:calc(84px + env(safe-area-inset-bottom, 0px)); z-index:5; display:none; flex-direction:column; width:min(340px, calc(100vw - 28px)); height:min(440px, calc(100vh - 130px)); height:min(440px, calc(100dvh - 130px)); height:min(440px, calc(100dvh - 130px)); overflow:hidden; background:var(--bg); border:1px solid var(--rule); border-radius:14px; box-shadow:0 8px 30px rgba(0,0,0,0.45); }
   .chat.on{ display:flex; }
@@ -347,6 +347,22 @@
   /* 連續向左滾動；第二份文字接在後面，形成無縫循環 */
   @keyframes ctMq{ to{ transform:translateX(calc(-1 * var(--w,0px))); } }
   @media (prefers-reduced-motion: reduce){ .ct-hint span{ animation:none; } .ct-hint b + b{ display:none; } }
+
+  .faq{ margin-top:28px; }
+  .faq h2{ font-size:calc(19px * var(--fs)); font-weight:500; margin:0 0 4px; padding:0 4px; }
+  .qa{ border-bottom:1px solid var(--rule); }
+  .qa:first-of-type{ border-top:1px solid var(--rule); }
+  .qa summary{ display:flex; justify-content:space-between; padding:15px 4px; cursor:pointer; list-style:none; font-size:calc(16px * var(--fs)); }
+  .qa summary::-webkit-details-marker{ display:none; }
+  .qa summary::after{ content:"+"; color:var(--ink-dim); }
+  .qa[open] summary::after{ content:"\2212"; }
+  .qa p{ margin:0 4px 16px; padding:12px 14px; font-size:calc(14.5px * var(--fs)); line-height:1.7; color:var(--ink-dim); background:rgba(255,255,255,0.05); border-radius:10px; }
+  .chips{ padding:10px 12px 4px; border-top:1px solid var(--rule); }
+  .chips[hidden]{ display:none; }
+  .chips-t{ display:block; font-size:12px; color:var(--ink-dim); margin-bottom:8px; }
+  .chips-r{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chips-r button{ padding:6px 12px; font:inherit; font-size:13px; color:var(--ink); background:var(--bg-soft); border:1px solid var(--rule); border-radius:999px; cursor:pointer; }
+  .chips-r button:active{ border-color:var(--accent); color:var(--accent); }
 </style>
 </head>
 <body>
@@ -357,8 +373,7 @@
     <div class="avatar" id="avatar"></div>
     <h1 id="siteName">藏寶閣</h1>
     <p class="tagline" id="tagline">千帆過盡皆是客 洗盡鉛華誰人知</p>
-    <button class="share-pill" type="button" data-share aria-label="分享給朋友"><span>npc.new.tg</span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8l5-5 5 5"/><path d="M12 3v12"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button>
-    <div class="divider"></div>
+    <button class="share-pill" type="button" data-share aria-label="分享給朋友"><span>npc.new.tg</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.8 20.8C3.2 13.5 6.2 8.6 11 6.4L11 3.6c0-.6.6-1 1.1-.6L21.3 9.6c.5.4.5 1.1 0 1.5L12.1 17.7c-.5.4-1.1 0-1.1-.6L11 14.2C7.3 15.6 5.2 17.9 4.6 20.9c-.1.6-.9.6-.8-.1Z"/></svg></button>
     <div class="notice" id="notice" hidden></div>
 
     <nav class="links" id="linkList">
@@ -393,6 +408,13 @@
         </span>
       </div>
     </nav>
+
+    <section class="faq">
+      <h2>常見問題</h2>
+      <details class="qa"><summary>怎麼付款</summary><p>支持微信、支付宝、USDT、TRX，下單按提示付款即可</p></details>
+      <details class="qa"><summary>多久到賬</summary><p>付款成功，立即自動發貨</p></details>
+      <details class="qa"><summary>怎麼使用</summary><p>產品詳情裡有使用方法和視頻教程</p></details>
+    </section>
 
     <details class="board" id="board">
       <summary>留言板</summary>
@@ -558,12 +580,12 @@
 </script>
 
 <div class="lang-sw" id="langSw" role="group" aria-label="Language"><button type="button" data-l="tw">繁</button><button type="button" data-l="cn">简</button><button type="button" data-l="en">EN</button></div>
-<button class="share-fab" id="shareBtn" type="button" data-share aria-label="分享給朋友"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8l5-5 5 5"/><path d="M12 3v12"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button>
 <span class="share-tip" id="shareTip" hidden></span>
 <button class="chat-fab" id="chatFab" type="button" aria-label="在線客服">💬</button>
 <div class="chat" id="chat">
   <div class="chat-hd">在線客服<small id="chatSt">客服暫時離線，留言後會盡快回覆，急事請用電報 @qqusbot</small></div>
   <div class="chat-log" id="chatLog"></div>
+  <div class="chips" id="chips"><span class="chips-t">常見問題，點一下就有答案：</span><div class="chips-r"><button type="button">怎麼付款</button><button type="button">多久到賬</button><button type="button">怎麼使用</button><button type="button">已下單出問題</button><button type="button">其他問題</button></div></div>
   <div class="chat-ct" id="chatCt" hidden><div class="ct-wrap"><input id="ctTxt" maxlength="40" placeholder=" " aria-label="留下電報用戶名或聯繫方式"><div class="ct-hint" id="ctHint"><span><b>留下電報用戶名或聯繫方式，客服離線中，上線後會主動聯繫你</b><b aria-hidden="true">留下電報用戶名或聯繫方式，客服離線中，上線後會主動聯繫你</b></span></div></div><button class="btn" id="ctSend" type="button">提交</button></div>
   <div class="chat-in"><input id="chatTxt" maxlength="500" placeholder="輸入消息"><button class="btn" id="chatSend" type="button">發送</button></div>
 </div>
@@ -675,7 +697,7 @@
   };
   $('chatFab').onclick = () => {
     $('chat').classList.toggle('on'); $('chatFab').classList.remove('dot');
-    if (open()) { lastAct = Date.now(); ev('open'); stopFlash(); seen = last; store.set('seen', last); if (!log.children.length) log.append(el('bub', '你好，有什麼可以幫你？')); loop(); }
+    if (open()) { lastAct = Date.now(); ev('open'); stopFlash(); seen = last; store.set('seen', last); if (!log.children.length) log.append(el('bub', '你好，有什麼可以幫你？')); $('chips').hidden = !!store.get('chatted'); loop(); }
   };
   // 第一次發言前要驗證：先暫存這條消息，驗證通過後自動（Turnstile）或在下一次輸入答案後（算術題）發出
   let held = null, ctok = '';
@@ -711,6 +733,20 @@
     h.firstElementChild.style.setProperty('--t', Math.max(6, w / 40) + 's');   // 約每秒 40px
   };
   window.addEventListener('resize', fit);
+  // 常見問題快捷按鈕：本地自動回覆，不走驗證；聊過天后不再顯示
+  const FAQ = {
+    '怎麼付款': '支持微信、支付宝、USDT、TRX',
+    '多久到賬': '付款成功，立即自動發貨',
+    '怎麼使用': '產品詳情裡有使用方法和視頻教程',
+    '已下單出問題': '付款顯示未支付可能網絡延遲，可點「查訂單」後「本機查詢」'
+  };
+  $('chips').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const q = b.textContent.trim();
+    if (!(q in FAQ)) { $('chatTxt').focus(); return; }
+    log.append(el('bub me', q), el('bub', FAQ[q]));
+    log.scrollTop = log.scrollHeight;
+  });
   $('ctSend').onclick = async () => {
     const contact = $('ctTxt').value.trim(); if (!contact) return;
     try {
@@ -738,7 +774,15 @@
     '為防止騷擾，請先完成驗證：': 'To prevent spam, please complete the verification:', '答案不對，請重新計算': 'Wrong answer, please try again',
     '發送太頻繁，請稍後再試': 'Sending too fast, please try again later', '發送失敗，請重試': 'Failed to send, please retry',
     '已記下，上線後會主動聯繫你': 'Noted. We will contact you once we are back online',
-    '已送達': 'Delivered', '未送達，請稍後再試或用電報聯繫': 'Not delivered. Please try again later or contact us on Telegram',
+    '已送達': 'Delivered',
+    '常見問題': 'FAQ', '怎麼付款': 'How do I pay?', '多久到賬': 'How fast is delivery?', '怎麼使用': 'How do I use it?', '已下單出問題': 'Problem with my order', '其他問題': 'Other questions',
+    '常見問題，點一下就有答案：': 'Common questions — tap one for an instant answer:',
+    '支持微信、支付宝、USDT、TRX，下單按提示付款即可': 'We accept WeChat Pay, Alipay, USDT and TRX. Place your order and pay as prompted.',
+    '支持微信、支付宝、USDT、TRX': 'We accept WeChat Pay, Alipay, USDT and TRX.',
+    '付款成功，立即自動發貨': 'Payment confirmed — delivered automatically right away.',
+    '產品詳情裡有使用方法和視頻教程': 'The product page has full instructions and a video tutorial.',
+    '產品詳情裡有使用方法和視頻教程': 'The product page has full instructions and a video tutorial.',
+    '付款顯示未支付可能網絡延遲，可點「查訂單」後「本機查詢」': 'If payment shows as unpaid, it is likely a network delay. Tap Order Lookup, then This Device to check.', '未送達，請稍後再試或用電報聯繫': 'Not delivered. Please try again later or contact us on Telegram',
     '💬 新回覆': '💬 New reply', '已收到，客服上線後會盡快回覆你。': 'Received. We will reply as soon as support is back online.', '現在不在營業時間，明早回覆你。': 'We are outside business hours and will reply tomorrow morning.'
   };
   const ENRE = [
@@ -753,7 +797,11 @@
     return r === undefined ? s : s.replace(t, () => r);
   };
   const sw = [...document.querySelectorAll('#langSw button')];
-  let mode = store.get('lang'); if (mode !== 'cn' && mode !== 'en') mode = 'tw';
+  let mode = store.get('lang');
+  if (mode !== 'cn' && mode !== 'en' && mode !== 'tw') {
+    const nl = (navigator.language || 'zh-TW').toLowerCase();
+    mode = nl.startsWith('zh') ? (/(tw|hk|mo|hant)/.test(nl) ? 'tw' : 'cn') : 'en';
+  }
   let conv = null, cc = null, obs = null;
   const baseTitle = () => conv ? conv(title) : title;
   const mark = () => sw.forEach(b => b.classList.toggle('on', b.dataset.l === mode));
