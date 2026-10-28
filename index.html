@@ -324,7 +324,14 @@
   .share-pill{ display:flex; align-items:center; gap:8px; width:fit-content; margin:0 auto 28px; padding:7px 15px; font:inherit; font-size:calc(14.5px * var(--fs)); color:var(--ink); background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.05); border-radius:999px; cursor:pointer; }
   .share-pill svg{ color:var(--accent); flex:none; display:block; }
   .share-pill span{ line-height:1; }
-  .chat-fab{ position:fixed; right:18px; bottom:calc(18px + env(safe-area-inset-bottom, 0px)); z-index:5; width:54px; height:54px; font-size:22px; color:var(--accent); background:var(--bg); border:1px solid var(--accent); border-radius:50%; box-shadow:0 4px 18px rgba(0,0,0,0.35); cursor:pointer; }
+  .chat-fab{ position:fixed; right:18px; bottom:calc(18px + env(safe-area-inset-bottom, 0px)); z-index:5; height:46px; padding:0 16px; display:flex; align-items:center; gap:7px; font:inherit; font-size:calc(14.5px * var(--fs)); font-weight:600; letter-spacing:.04em; color:var(--accent); background:var(--bg); border:1px solid var(--accent); border-radius:999px; box-shadow:0 4px 18px rgba(0,0,0,0.35); cursor:pointer; }
+  .chat-fab .fab-ic{ font-size:17px; }
+  .fab-tip{ position:fixed; right:18px; bottom:calc(76px + env(safe-area-inset-bottom, 0px)); z-index:5; max-width:min(260px, calc(100vw - 36px)); padding:9px 30px 9px 13px; font-size:calc(13.5px * var(--fs)); line-height:1.45; color:var(--ink); background:var(--bg-soft); border:1px solid var(--accent); border-radius:12px; box-shadow:0 6px 22px rgba(0,0,0,0.4); cursor:pointer; animation:tipIn .35s ease both; }
+  .fab-tip[hidden]{ display:none; }
+  .fab-tip::after{ content:""; position:absolute; right:26px; bottom:-6px; width:11px; height:11px; background:var(--bg-soft); border-right:1px solid var(--accent); border-bottom:1px solid var(--accent); transform:rotate(45deg); }
+  .fab-tip-x{ position:absolute; top:4px; right:8px; font-size:11px; color:var(--ink-dim); padding:2px; }
+  @keyframes tipIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce){ .fab-tip{ animation:none; } }
   .chat{ position:fixed; right:14px; bottom:calc(84px + env(safe-area-inset-bottom, 0px)); z-index:5; display:none; flex-direction:column; width:min(340px, calc(100vw - 28px)); height:min(440px, calc(100vh - 130px)); height:min(440px, calc(100dvh - 130px)); overflow:hidden; background:var(--bg); border:1px solid var(--rule); border-radius:14px; box-shadow:0 8px 30px rgba(0,0,0,0.45); }
   .chat.on{ display:flex; }
   .chat-hd{ padding:12px 14px; font-size:15px; color:var(--accent); border-bottom:1px solid var(--rule); }
@@ -340,7 +347,7 @@
   .msg-re{ margin-top:4px; padding-left:10px; color:var(--ink-dim); border-left:2px solid var(--accent); }
   .form .cap{ display:flex; align-items:center; gap:8px; font-size:15px; color:var(--ink-dim); }
   .form .cap input{ width:84px; }
-  .chat-fab.dot::after{ content:""; position:absolute; top:3px; right:3px; width:12px; height:12px; background:#e5534b; border:2px solid var(--bg); border-radius:50%; }
+  .chat-fab.dot::after{ content:""; position:absolute; top:-4px; right:-4px; width:12px; height:12px; background:#e5534b; border:2px solid var(--bg); border-radius:50%; }
   .form .cap[hidden], .chat-ct[hidden]{ display:none; }
   .chat-ct{ display:flex; gap:8px; padding:8px 10px 0; border-top:1px solid var(--rule); }
   .chat-ct input{ flex:1; min-width:0; padding:7px 10px; font:inherit; font-size:16px; color:var(--ink); background:rgba(0,0,0,0.22); border:1px solid var(--rule); border-radius:10px; outline:none; }
@@ -706,7 +713,8 @@
     </div>
   </div>
 </div>
-<button class="chat-fab" id="chatFab" type="button" aria-label="在線客服">💬</button>
+<div class="fab-tip" id="fabTip" hidden>有問題？點我在線諮詢<span class="fab-tip-x" id="fabTipX" aria-hidden="true">✕</span></div>
+<button class="chat-fab" id="chatFab" type="button" aria-label="在線客服"><span class="fab-ic">💬</span><span class="fab-tx">在線客服</span></button>
 <div class="chat" id="chat">
   <div class="chat-hd">在線客服<button type="button" class="sheet-x chat-x" id="chatX" aria-label="關閉">✕</button><small id="chatSt">客服暫時離線，留言後會盡快回覆，急事請用電報 @qqusbot</small></div>
   <div class="chat-log" id="chatLog"></div>
@@ -881,6 +889,16 @@
     closeChat();
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && open()) closeChat(); });
+  // 首次引導氣泡：只給還沒聊過的新訪客看一次；點氣泡直接打開客服，6 秒自動消失，打開客服時也收起
+  const tipHide = () => { $('fabTip').hidden = true; };
+  $('chatFab').addEventListener('click', tipHide);
+  $('fabTip').onclick = () => { tipHide(); $('chatFab').click(); };
+  $('fabTipX').onclick = e => { e.stopPropagation(); tipHide(); };
+  if (!store.get('chatted') && !store.get('fabTip')) setTimeout(() => {
+    if (open() || store.get('chatted')) return;
+    store.set('fabTip', '1'); $('fabTip').hidden = false;
+    setTimeout(tipHide, 6000);
+  }, 1200);
   // 第一次發言前要驗證：先暫存這條消息，驗證通過後自動（Turnstile）或在下一次輸入答案後（算術題）發出
   let held = null, ctok = '';
   const ask = async () => {
@@ -951,7 +969,7 @@
     '客服暫時離線，留言後會盡快回覆，急事請用電報 @qqusbot': 'Support is offline. Leave a message and we will reply soon. For urgent matters, use Telegram @qqusbot',
     '留下電報用戶名或聯繫方式，客服離線中，上線後會主動聯繫你': 'Leave your Telegram username or contact. Support is offline and will reach out once back online',
     '留下電報用戶名或聯繫方式': 'Leave your Telegram username or contact',
-    '提交': 'Submit', '發送': 'Send', '輸入消息': 'Type a message', '你好，有什麼可以幫你？': 'Hi, how can we help?', '歡迎回來': 'Welcome back', '熱門': 'HOT', '新': 'NEW',
+    '提交': 'Submit', '發送': 'Send', '輸入消息': 'Type a message', '你好，有什麼可以幫你？': 'Hi, how can we help?', '歡迎回來': 'Welcome back', '有問題？點我在線諮詢': 'Questions? Tap to chat with us', '熱門': 'HOT', '新': 'NEW',
     '留個聯繫方式，客服上線後通知你': 'Leave a contact, and we will notify you when support is back', 'Telegram / 微信 / 電話 / 郵箱': 'Telegram / WeChat / phone / email', '已收到，客服上線後會聯繫你': 'Got it — we will reach out when support is back',
     '為防止騷擾，請先完成驗證：': 'To prevent spam, please complete the verification:', '答案不對，請重新計算': 'Wrong answer, please try again',
     '發送太頻繁，請稍後再試': 'Sending too fast, please try again later', '發送失敗，請重試': 'Failed to send, please retry',
