@@ -298,6 +298,8 @@
     color: var(--accent);
   }
   .copyline{ margin-top:7px; font-size:calc(12px * var(--fs)); }
+  .tgline{ margin-top:7px; font-size:calc(12.5px * var(--fs)); }
+  .tgline a{ color:var(--accent); text-decoration:underline; text-underline-offset:2px; }
   /* —— 留言板 / 在線客服 / 訪問量 —— */
   #runtime{ position:fixed; top:calc(10px + env(safe-area-inset-top, 0px)); left:12px; z-index:5; padding:4px 10px; font-size:12.5px; color:var(--ink-dim); letter-spacing:.3px; border:1px solid var(--rule); border-radius:999px; }
   .board{ margin-top:22px; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); }
@@ -476,6 +478,7 @@
     <footer>
       <span id="footerText"></span>
       <span id="clock"></span>
+      <div class="tgline"><span>電報</span> <a href="https://t.me/qqusbot" target="_blank" rel="noopener">@qqusbot</a></div>
       <div class="copyline">© <span id="copyY">2026</span> <span>藏寶閣</span></div>
     </footer>
   </div>
