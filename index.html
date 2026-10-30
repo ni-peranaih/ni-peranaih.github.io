@@ -298,7 +298,7 @@
     color: var(--accent);
   }
   /* —— 留言板 / 在線客服 / 訪問量 —— */
-  #runtime{ margin-top:7px; }
+  #runtime{ margin-top:9px; text-align:center; font-size:calc(12.5px * var(--fs)); color:var(--ink-dim); letter-spacing:.5px; }
   .board{ margin-top:28px; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); }
   .board summary{ display:flex; justify-content:space-between; padding:17px 4px; cursor:pointer; list-style:none; font-size:calc(19px * var(--fs)); }
   .board summary::-webkit-details-marker{ display:none; }
@@ -420,6 +420,7 @@
     <div class="avatar" id="avatar"></div>
     <h1 id="siteName">藏寶閣</h1>
     <p class="tagline" id="tagline">千帆過盡皆是客 洗盡鉛華誰人知</p>
+    <div id="runtime" hidden><span>本站已穩定運行</span> <span id="runD"></span> <span>天</span> · <span>累計訪客</span> <span id="visN"></span></div>
     <button class="share-pill" type="button" data-share aria-label="分享給朋友"><span>OJBK.FYI</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.8 20.8C3.2 13.5 6.2 8.6 11 6.4L11 3.6c0-.6.6-1 1.1-.6L21.3 9.6c.5.4.5 1.1 0 1.5L12.1 17.7c-.5.4-1.1 0-1.1-.6L11 14.2C7.3 15.6 5.2 17.9 4.6 20.9c-.1.6-.9.6-.8-.1Z"/></svg></button>
     <div class="notice" id="notice" hidden></div>
 
@@ -475,7 +476,6 @@
     <footer>
       <span id="footerText"></span>
       <span id="clock"></span>
-      <div id="runtime" hidden><span>本站已穩定運行</span> <span id="runD"></span> <span>天</span> · <span>累計訪客</span> <span id="visN"></span></div>
     </footer>
   </div>
 
